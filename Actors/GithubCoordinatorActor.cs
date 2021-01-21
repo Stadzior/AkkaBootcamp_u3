@@ -22,11 +22,15 @@ namespace GithubActors.Actors
         private HashSet<IActorRef> _subscribers;
         private ICancelable _publishTimer;
         private GithubProgressStats _githubProgressStats;
-
         private bool _receivedInitialUsers;
 
-        public GithubCoordinatorActor() 
-            => Waiting();
+        private readonly TimeSpan _updatesFrequency;
+
+        public GithubCoordinatorActor(TimeSpan updatesFrequency)
+        {
+            _updatesFrequency = updatesFrequency;
+            Waiting();
+        }
 
         protected override void PreStart() 
             => _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient)));
@@ -51,6 +55,7 @@ namespace GithubActors.Actors
             _similarRepos = new Dictionary<string, SimilarRepo>();
             _publishTimer = new Cancelable(Context.System.Scheduler);
             _githubProgressStats = new GithubProgressStats();
+
             Become(Working);
         }
 
@@ -115,7 +120,7 @@ namespace GithubActors.Actors
             {
                 //this is our first subscriber, which means we need to turn publishing on
                 if (!_subscribers.Any())
-                    Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100), Self, updates, Self, _publishTimer);
+                    Context.System.Scheduler.ScheduleTellRepeatedly(_updatesFrequency, _updatesFrequency, Self, new PublishUpdate(), Self, _publishTimer);
 
                 _subscribers.Add(updates.Subscriber);
             });

@@ -11,6 +11,7 @@ namespace GithubActors.Actors
     {
         private IActorRef _coordinator;
         private IActorRef _canAcceptJobSender;
+        private readonly TimeSpan _updatesFrequency = TimeSpan.FromMilliseconds(500);
 
         public GithubCommanderActor()
         {
@@ -36,7 +37,7 @@ namespace GithubActors.Actors
 
         protected override void PreStart()
         {
-            _coordinator = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name);
+            _coordinator = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor(_updatesFrequency)), ActorPaths.GithubCoordinatorActor.Name);
             base.PreStart();
         }
 
