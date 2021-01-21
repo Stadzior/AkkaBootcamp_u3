@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System; 
 using System.Linq;
 using Akka.Actor;
+using GithubActors.Messages;
 using Octokit;
 
 namespace GithubActors.Actors
@@ -11,46 +11,6 @@ namespace GithubActors.Actors
     /// </summary>
     public class GithubWorkerActor : ReceiveActor
     {
-        #region Message classes
-
-        public class QueryStarrers
-        {
-            public QueryStarrers(RepoKey key)
-            {
-                Key = key;
-            }
-
-            public RepoKey Key { get; private set; }
-        }
-
-        /// <summary>
-        /// Query an individual starrer
-        /// </summary>
-        public class QueryStarrer
-        {
-            public QueryStarrer(string login)
-            {
-                Login = login;
-            }
-
-            public string Login { get; private set; }
-        }
-
-        public class StarredReposForUser
-        {
-            public StarredReposForUser(string login, IEnumerable<Repository> repos)
-            {
-                Repos = repos;
-                Login = login;
-            }
-
-            public string Login { get; private set; }
-
-            public IEnumerable<Repository> Repos { get; private set; }
-        }
-
-        #endregion
-
         private IGitHubClient _gitHubClient;
         private readonly Func<IGitHubClient> _gitHubClientFactory;
 

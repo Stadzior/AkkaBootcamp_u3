@@ -72,7 +72,7 @@
             this.btnLaunch.TabIndex = 3;
             this.btnLaunch.Text = "GO";
             this.btnLaunch.UseVisualStyleBackColor = true;
-            this.btnLaunch.Click += new System.EventHandler(this.btnLaunch_Click);
+            this.btnLaunch.Click += new System.EventHandler(this.BtnLaunch_Click);
             // 
             // LauncherForm
             // 

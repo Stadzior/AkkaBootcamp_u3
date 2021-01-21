@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Akka.Actor;
 using GithubActors.Actors;
+using GithubActors.Messages;
 
 namespace GithubActors
 {
@@ -24,24 +25,18 @@ namespace GithubActors
 
         private void GithubAuth_Load(object sender, EventArgs e)
         {
-            linkGhLabel.Links.Add(new LinkLabel.Link() { LinkData = "https://help.github.com/articles/creating-an-access-token-for-command-line-use/" });
-            _authActor =
-                Program.GithubActors.ActorOf(Props.Create(() => new GithubAuthenticationActor(lblAuthStatus, this)), ActorPaths.GithubAuthenticatorActor.Name);
+            linkGhLabel.Links.Add(new LinkLabel.Link { LinkData = "https://help.github.com/articles/creating-an-access-token-for-command-line-use/" });
+            _authActor = Program.GithubActors.ActorOf(Props.Create(() => new GithubAuthenticationActor(lblAuthStatus, this)), ActorPaths.GithubAuthenticatorActor.Name);
         }
 
-        private void linkGhLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void LinkGhLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var link = e.Link.LinkData as string;
-            if (link != null)
-            {
+            if (e.Link.LinkData is string link)
                 //Send the URL to the operating system via windows shell
                 Process.Start(link);
-            }
         }
 
-        private void btnAuthenticate_Click(object sender, EventArgs e)
-        {
-            _authActor.Tell(new GithubAuthenticationActor.Authenticate(tbOAuth.Text));
-        }
+        private void BtnAuthenticate_Click(object sender, EventArgs e) 
+            => _authActor.Tell(new Authenticate(tbOAuth.Text));
     }
 }

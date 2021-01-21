@@ -1,7 +1,7 @@
 ﻿using Octokit;
 using Octokit.Internal;
 
-namespace GithubActors
+namespace GithubActors.Factories
 {
     /// <summary>
     /// Creates <see cref="GitHubClient"/> instances.
@@ -15,13 +15,9 @@ namespace GithubActors
         public static string OAuthToken { get; set; }
 
         public static GitHubClient GetUnauthenticatedClient()
-        {
-            return new GitHubClient(new ProductHeaderValue("AkkaBootcamp-Unit3"));
-        }
+            => new GitHubClient(new ProductHeaderValue("AkkaBootcamp-Unit3"));
 
-    public static GitHubClient GetClient()
-        {
-            return new GitHubClient(new ProductHeaderValue("AkkaBootcamp-Unit3"), new InMemoryCredentialStore(new Credentials(OAuthToken)));
-        }
+        public static GitHubClient GetClient()
+            => new GitHubClient(new ProductHeaderValue("AkkaBootcamp-Unit3"), new InMemoryCredentialStore(new Credentials(OAuthToken)));
     }
 }

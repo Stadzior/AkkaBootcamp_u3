@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Linq;
 using Akka.Actor;
-using Akka.Routing;
+using GithubActors.Messages;
 
 namespace GithubActors.Actors
 {
@@ -10,40 +9,6 @@ namespace GithubActors.Actors
     /// </summary>
     public class GithubCommanderActor : ReceiveActor
     {
-        #region Message classes
-
-        public class CanAcceptJob
-        {
-            public CanAcceptJob(RepoKey repo)
-            {
-                Repo = repo;
-            }
-
-            public RepoKey Repo { get; private set; }
-        }
-
-        public class AbleToAcceptJob
-        {
-            public AbleToAcceptJob(RepoKey repo)
-            {
-                Repo = repo;
-            }
-
-            public RepoKey Repo { get; private set; }
-        }
-
-        public class UnableToAcceptJob
-        {
-            public UnableToAcceptJob(RepoKey repo)
-            {
-                Repo = repo;
-            }
-
-            public RepoKey Repo { get; private set; }
-        }
-
-        #endregion
-
         private IActorRef _coordinator;
         private IActorRef _canAcceptJobSender;
 
@@ -55,20 +20,17 @@ namespace GithubActors.Actors
                 _coordinator.Tell(job);
             });
 
-            Receive<UnableToAcceptJob>(job =>
-            {
-                _canAcceptJobSender.Tell(job);
-            });
+            Receive<UnableToAcceptJob>(job => _canAcceptJobSender.Tell(job));
 
             Receive<AbleToAcceptJob>(job =>
             {
                 _canAcceptJobSender.Tell(job);
 
                 //start processing messages
-                _coordinator.Tell(new GithubCoordinatorActor.BeginJob(job.Repo));
+                _coordinator.Tell(new BeginJob(job.Repo));
 
                 //launch the new window to view results of the processing
-                Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(new MainFormActor.LaunchRepoResultsWindow(job.Repo, Sender));
+                Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(new LaunchRepoResultsWindow(job.Repo, Sender));
             });
         }
 

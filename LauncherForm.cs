@@ -2,6 +2,8 @@
 using System.Windows.Forms;
 using Akka.Actor;
 using GithubActors.Actors;
+using GithubActors.Factories;
+using GithubActors.Messages;
 
 namespace GithubActors
 {
@@ -19,11 +21,10 @@ namespace GithubActors
             /* INITIALIZE ACTORS */
             _mainFormActor = Program.GithubActors.ActorOf(Props.Create(() => new MainFormActor(lblIsValid)), ActorPaths.MainFormActor.Name);
             Program.GithubActors.ActorOf(Props.Create(() => new GithubValidatorActor(GithubClientFactory.GetClient())), ActorPaths.GithubValidatorActor.Name);
-            Program.GithubActors.ActorOf(Props.Create(() => new GithubCommanderActor()),
-                ActorPaths.GithubCommanderActor.Name);
+            Program.GithubActors.ActorOf(Props.Create(() => new GithubCommanderActor()), ActorPaths.GithubCommanderActor.Name);
         }
 
-        private void btnLaunch_Click(object sender, EventArgs e)
+        private void BtnLaunch_Click(object sender, EventArgs e)
         {
             _mainFormActor.Tell(new ProcessRepo(tbRepoUrl.Text));
         }

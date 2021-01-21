@@ -2,6 +2,8 @@
 using System.Drawing;
 using System.Windows.Forms;
 using Akka.Actor;
+using GithubActors.Messages;
+using GithubActors.Models;
 
 namespace GithubActors.Actors
 {
@@ -11,11 +13,9 @@ namespace GithubActors.Actors
     /// </summary>
     public class RepoResultsActor : ReceiveActor
     {
-        private DataGridView _userDg;
-        private ToolStripStatusLabel _statusLabel;
-        private ToolStripProgressBar _progressBar;
-
-        private bool _hasSetProgress = false;
+        private readonly DataGridView _userDg;
+        private readonly ToolStripStatusLabel _statusLabel;
+        private readonly ToolStripProgressBar _progressBar;
 
         public RepoResultsActor(DataGridView userDg, ToolStripStatusLabel statusLabel, ToolStripProgressBar progressBar)
         {
@@ -31,7 +31,7 @@ namespace GithubActors.Actors
             Receive<GithubProgressStats>(stats =>
             {
                 //time to start animating the progress bar
-                if (!_hasSetProgress && stats.ExpectedUsers > 0)
+                if (stats.ExpectedUsers > 0)
                 {
                     _progressBar.Minimum = 0;
                     _progressBar.Step = 1;
@@ -41,8 +41,7 @@ namespace GithubActors.Actors
                     _statusLabel.Visible = true;
                 }
 
-                _statusLabel.Text = string.Format("{0} out of {1} users ({2} failures) [{3} elapsed]",
-                    stats.UsersThusFar, stats.ExpectedUsers, stats.QueryFailures, stats.Elapsed);
+                _statusLabel.Text = $@"{stats.UsersThusFar} out of {stats.ExpectedUsers} users ({stats.QueryFailures} failures) [{stats.Elapsed} elapsed]";
                 _progressBar.Value = stats.UsersThusFar + stats.QueryFailures;
             });
 
@@ -66,15 +65,14 @@ namespace GithubActors.Actors
             });
 
             //critical failure, like not being able to connect to Github
-            Receive<GithubCoordinatorActor.JobFailed>(failed =>
+            Receive<JobFailed>(failed =>
             {
                 _progressBar.Visible = true;
                 _progressBar.ForeColor = Color.Red;
                 _progressBar.Maximum = 1;
                 _progressBar.Value = 1;
                 _statusLabel.Visible = true;
-                _statusLabel.Text = string.Format("Failed to gather data for Github repository {0} / {1}",
-                    failed.Repo.Owner, failed.Repo.Repo);
+                _statusLabel.Text = $@"Failed to gather data for Github repository {failed.Repo.Owner} / {failed.Repo.Repo}";
             });
         }
     }

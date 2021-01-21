@@ -1,5 +1,7 @@
 ﻿using System.Drawing;
 using Akka.Actor;
+using GithubActors.Factories;
+using GithubActors.Messages;
 using Octokit;
 using Label = System.Windows.Forms.Label;
 
@@ -7,26 +9,6 @@ namespace GithubActors.Actors
 {
     public class GithubAuthenticationActor : ReceiveActor
     {
-        #region Messages
-
-        public class Authenticate
-        {
-            public Authenticate(string oAuthToken)
-            {
-                OAuthToken = oAuthToken;
-            }
-
-            public string OAuthToken { get; private set; }
-        }
-
-        public class AuthenticationFailed { }
-
-        public class AuthenticationCancelled { }
-
-        public class AuthenticationSuccess { }
-
-        #endregion
-
         private readonly Label _statusLabel;
         private readonly GithubAuth _form;
 
@@ -34,10 +16,10 @@ namespace GithubActors.Actors
         {
             _statusLabel = statusLabel;
             _form = form;
-            Unauthenticated();
+            Unauthenticated("Not yet authenticated");
         }
 
-        private void Unauthenticated()
+        private void Unauthenticated(string reason)
         {
             Receive<Authenticate>(auth =>
             {
@@ -49,7 +31,7 @@ namespace GithubActors.Actors
                 client.User.Current().ContinueWith<object>(tr =>
                 {
                     if (tr.IsFaulted)
-                        return new AuthenticationFailed();
+                        return new AuthenticationFailed(reason);
                     if (tr.IsCanceled)
                         return new AuthenticationCancelled();
                     return new AuthenticationSuccess();
@@ -61,15 +43,15 @@ namespace GithubActors.Actors
         {
             _statusLabel.Visible = true;
             _statusLabel.ForeColor = Color.Yellow;
-            _statusLabel.Text = "Authenticating...";
+            _statusLabel.Text = @"Authenticating...";
             Become(Authenticating);
         }
 
         private void BecomeUnauthenticated(string reason)
         {
             _statusLabel.ForeColor = Color.Red;
-            _statusLabel.Text = "Authentication failed. Please try again.";
-            Become(Unauthenticated);
+            _statusLabel.Text = @"Authentication failed. Please try again.";
+            Become(() => Unauthenticated(reason));
         }
 
         private void Authenticating()

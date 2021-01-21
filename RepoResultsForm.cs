@@ -1,14 +1,15 @@
 ﻿using System.Windows.Forms;
 using Akka.Actor;
 using GithubActors.Actors;
+using GithubActors.Messages;
 
 namespace GithubActors
 {
     public partial class RepoResultsForm : Form
     {
         private IActorRef _formActor;
-        private IActorRef _githubCoordinator;
-        private RepoKey _repo;
+        private readonly IActorRef _githubCoordinator;
+        private readonly RepoKey _repo;
 
         public RepoResultsForm(IActorRef githubCoordinator, RepoKey repo)
         {
@@ -24,10 +25,10 @@ namespace GithubActors
                     Props.Create(() => new RepoResultsActor(dgUsers, tsStatus, tsProgress))
                         .WithDispatcher("akka.actor.synchronized-dispatcher")); //run on the UI thread
 
-            Text = string.Format("Repos Similar to {0} / {1}", _repo.Owner, _repo.Repo);
+            Text = $@"Repos Similar to {_repo.Owner} / {_repo.Repo}";
 
             //start subscribing to updates
-            _githubCoordinator.Tell(new GithubCoordinatorActor.SubscribeToProgressUpdates(_formActor));
+            _githubCoordinator.Tell(new SubscribeUpdates(_formActor));
         }
 
         private void RepoResultsForm_FormClosing(object sender, FormClosingEventArgs e)

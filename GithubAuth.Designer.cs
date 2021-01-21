@@ -73,7 +73,7 @@
             this.linkGhLabel.Size = new System.Drawing.Size(273, 18);
             this.linkGhLabel.TabIndex = 3;
             this.linkGhLabel.Text = "How to get a GitHub Access Token";
-            this.linkGhLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkGhLabel_LinkClicked);
+            this.linkGhLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkGhLabel_LinkClicked);
             // 
             // btnAuthenticate
             // 
@@ -84,7 +84,7 @@
             this.btnAuthenticate.TabIndex = 4;
             this.btnAuthenticate.Text = "Authenticate";
             this.btnAuthenticate.UseVisualStyleBackColor = true;
-            this.btnAuthenticate.Click += new System.EventHandler(this.btnAuthenticate_Click);
+            this.btnAuthenticate.Click += new System.EventHandler(this.BtnAuthenticate_Click);
             // 
             // GithubAuth
             // 

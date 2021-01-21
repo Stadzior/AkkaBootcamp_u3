@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Configuration;
 using System.Windows.Forms;
 using Akka.Actor;
-using Akka.Configuration;
 
 namespace GithubActors
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// ActorSystem we'll be using to collect and process data
@@ -18,7 +16,7 @@ namespace GithubActors
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             GithubActors = ActorSystem.Create("GithubActors");
             Application.SetHighDpiMode(HighDpiMode.SystemAware);

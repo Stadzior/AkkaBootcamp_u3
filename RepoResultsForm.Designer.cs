@@ -32,7 +32,7 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tsProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.tsStatus = new System.Windows.Forms.ToolStripStatusLabel();
-            this.Owner = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.OwnerName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.RepoName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.URL = new System.Windows.Forms.DataGridViewLinkColumn();
             this.Shared = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -48,7 +48,7 @@
             this.dgUsers.AllowUserToOrderColumns = true;
             this.dgUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgUsers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Owner,
+            this.OwnerName,
             this.RepoName,
             this.URL,
             this.Shared,
@@ -85,10 +85,10 @@
             this.tsStatus.Text = "Processing...";
             this.tsStatus.Visible = false;
             // 
-            // Owner
+            // OwnerName
             // 
-            this.Owner.HeaderText = "Owner";
-            this.Owner.Name = "Owner";
+            this.OwnerName.HeaderText = "Owner";
+            this.OwnerName.Name = "OwnerName";
             // 
             // RepoName
             // 
@@ -146,7 +146,7 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripProgressBar tsProgress;
         private System.Windows.Forms.ToolStripStatusLabel tsStatus;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Owner;
+        private System.Windows.Forms.DataGridViewTextBoxColumn OwnerName;
         private System.Windows.Forms.DataGridViewTextBoxColumn RepoName;
         private System.Windows.Forms.DataGridViewLinkColumn URL;
         private System.Windows.Forms.DataGridViewTextBoxColumn Shared;

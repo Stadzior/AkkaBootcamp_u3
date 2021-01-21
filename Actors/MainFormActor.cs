@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 using Akka.Actor;
+using GithubActors.Messages;
 
 namespace GithubActors.Actors
 {
@@ -10,23 +11,6 @@ namespace GithubActors.Actors
     /// </summary>
     public class MainFormActor : ReceiveActor, IWithUnboundedStash
     {
-        #region Messages
-
-        public class LaunchRepoResultsWindow
-        {
-            public LaunchRepoResultsWindow(RepoKey repo, IActorRef coordinator)
-            {
-                Repo = repo;
-                Coordinator = coordinator;
-            }
-
-            public RepoKey Repo { get; private set; }
-
-            public IActorRef Coordinator { get; private set; }
-        }
-
-        #endregion
-
         private readonly Label _validationLabel;
 
         public MainFormActor(Label validationLabel)
@@ -42,7 +26,7 @@ namespace GithubActors.Actors
         {
             Receive<ProcessRepo>(repo =>
             {
-                Context.ActorSelection(ActorPaths.GithubValidatorActor.Path).Tell(new GithubValidatorActor.ValidateRepo(repo.RepoUri));
+                Context.ActorSelection(ActorPaths.GithubValidatorActor.Path).Tell(new ValidateRepo(repo.RepoUri));
                 BecomeBusy(repo.RepoUri);
             });
 
@@ -60,7 +44,7 @@ namespace GithubActors.Actors
         private void BecomeBusy(string repoUrl)
         {
             _validationLabel.Visible = true;
-            _validationLabel.Text = string.Format("Validating {0}...", repoUrl);
+            _validationLabel.Text = $@"Validating {repoUrl}...";
             _validationLabel.ForeColor = Color.Gold;
             Become(Busy);
         }
@@ -70,13 +54,14 @@ namespace GithubActors.Actors
         /// </summary>
         private void Busy()
         {
-            Receive<GithubValidatorActor.RepoIsValid>(valid => BecomeReady("Valid!"));
-            Receive<GithubValidatorActor.InvalidRepo>(invalid => BecomeReady(invalid.Reason, false));
+            Receive<RepoIsValid>(valid => BecomeReady("Valid!"));
+            Receive<InvalidRepo>(invalid => BecomeReady(invalid.Reason, false));
+
             //yes
-            Receive<GithubCommanderActor.UnableToAcceptJob>(job => BecomeReady(string.Format("{0}/{1} is a valid repo, but system can't accept additional jobs", job.Repo.Owner, job.Repo.Repo), false));
+            Receive<UnableToAcceptJob>(job => BecomeReady($"{job.Repo.Owner}/{job.Repo.Repo} is a valid repo, but system can't accept additional jobs", false));
 
             //no
-            Receive<GithubCommanderActor.AbleToAcceptJob>(job => BecomeReady(string.Format("{0}/{1} is a valid repo - starting job!", job.Repo.Owner, job.Repo.Repo)));
+            Receive<AbleToAcceptJob>(job => BecomeReady($"{job.Repo.Owner}/{job.Repo.Repo} is a valid repo - starting job!"));
             Receive<LaunchRepoResultsWindow>(window => Stash.Stash());
         }
 
