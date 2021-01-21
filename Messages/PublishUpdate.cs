@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GithubActors.Messages
+﻿namespace GithubActors.Messages
 {
+    /// <summary>
+    /// Made singleton to prevent garbage collection
+    /// </summary>
     public class PublishUpdate
     {
+        private PublishUpdate()
+        {
+        }
+
+        public static PublishUpdate Instance => new PublishUpdate();
     }
 }

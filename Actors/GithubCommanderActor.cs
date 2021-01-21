@@ -11,7 +11,7 @@ namespace GithubActors.Actors
     {
         private IActorRef _coordinator;
         private IActorRef _canAcceptJobSender;
-        private readonly TimeSpan _updatesFrequency = TimeSpan.FromMilliseconds(500);
+        private readonly TimeSpan _updatesFrequency = TimeSpan.FromMilliseconds(50);
 
         public GithubCommanderActor()
         {

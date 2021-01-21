@@ -120,7 +120,7 @@ namespace GithubActors.Actors
             {
                 //this is our first subscriber, which means we need to turn publishing on
                 if (!_subscribers.Any())
-                    Context.System.Scheduler.ScheduleTellRepeatedly(_updatesFrequency, _updatesFrequency, Self, new PublishUpdate(), Self, _publishTimer);
+                    Context.System.Scheduler.ScheduleTellRepeatedly(_updatesFrequency, _updatesFrequency, Self, PublishUpdate.Instance, Self, _publishTimer);
 
                 _subscribers.Add(updates.Subscriber);
             });
