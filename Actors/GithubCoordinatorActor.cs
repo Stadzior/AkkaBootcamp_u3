@@ -114,7 +114,7 @@ namespace GithubActors.Actors
             Receive<SubscribeUpdates>(updates =>
             {
                 //this is our first subscriber, which means we need to turn publishing on
-                if (_subscribers.Count == 0)
+                if (!_subscribers.Any())
                     Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100), Self, updates, Self, _publishTimer);
 
                 _subscribers.Add(updates.Subscriber);

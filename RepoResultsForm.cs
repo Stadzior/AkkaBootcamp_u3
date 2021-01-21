@@ -20,9 +20,7 @@ namespace GithubActors
 
         private void RepoResultsForm_Load(object sender, System.EventArgs e)
         {
-            _formActor =
-                Program.GithubActors.ActorOf(
-                    Props.Create(() => new RepoResultsActor(dgUsers, tsStatus, tsProgress))
+            _formActor = Program.GithubActors.ActorOf(Props.Create(() => new RepoResultsActor(dgUsers, tsStatus, tsProgress))
                         .WithDispatcher("akka.actor.synchronized-dispatcher")); //run on the UI thread
 
             Text = $@"Repos Similar to {_repo.Owner} / {_repo.Repo}";
