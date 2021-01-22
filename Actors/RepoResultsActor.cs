@@ -41,7 +41,7 @@ namespace GithubActors.Actors
                     _statusLabel.Visible = true;
                 }
 
-                _statusLabel.Text = $@"{stats.UsersThusFar} out of {stats.ExpectedUsers} users ({stats.QueryFailures} failures) [{stats.Elapsed} elapsed]";
+                _statusLabel.Text = $@"{stats.UsersThusFar} out of {stats.ExpectedUsers} users ({stats.QueryFailures} failures) [{stats.Elapsed} elapsed] Pool size: {stats.PoolSize}";
                 _progressBar.Value = stats.UsersThusFar + stats.QueryFailures;
             });
 

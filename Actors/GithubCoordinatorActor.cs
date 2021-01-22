@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Akka.Actor;
+using Akka.Routing;
 using GithubActors.Factories;
 using GithubActors.Messages;
 using GithubActors.Models;
@@ -15,6 +16,7 @@ namespace GithubActors.Actors
     /// </summary>
     public class GithubCoordinatorActor : ReceiveActor
     {
+        private Pool _githubWorkerPool;
         private IActorRef _githubWorker;
 
         private RepoKey _currentRepo;
@@ -32,8 +34,13 @@ namespace GithubActors.Actors
             Waiting();
         }
 
-        protected override void PreStart() 
-            => _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient)));
+        protected override void PreStart()
+        {
+            _githubWorkerPool = new RoundRobinPool(1, new DefaultResizer(1, 100));
+            _githubWorker = Context.ActorOf(Props
+                .Create(() => new GithubWorkerActor(GithubClientFactory.GetClient))
+                .WithRouter(_githubWorkerPool));
+        }
 
         private void Waiting()
         {
@@ -99,6 +106,7 @@ namespace GithubActors.Actors
                     BecomeWaiting();
                 }
 
+                _githubProgressStats = _githubProgressStats.UpdatePoolSize(_githubWorkerPool.NrOfInstances);
                 foreach (var subscriber in _subscribers)
                     subscriber.Tell(_githubProgressStats);
             });

@@ -12,14 +12,14 @@ namespace GithubActors.Actors
     /// </summary>
     public class GithubCommanderActor : ReceiveActor, IWithUnboundedStash
     {
-        private IActorRef _boardcaster;
+        private IActorRef _broadcaster;
         private IActorRef _canAcceptJobSender; 
 
         public IStash Stash { get; set; }
         private int _pendingJobReplies;
         private const int _coordinatorCount = 3;
 
-        private readonly TimeSpan _updatesFrequency = TimeSpan.FromMilliseconds(50);
+        private readonly TimeSpan _updatesFrequency = TimeSpan.FromMilliseconds(200);
 
         public GithubCommanderActor()
             => Ready();
@@ -28,7 +28,7 @@ namespace GithubActors.Actors
         {
             Receive<CanAcceptJob>(job =>
             {
-                _boardcaster.Tell(job);
+                _broadcaster.Tell(job);
                 BecomeAsking();
             });
         }
@@ -84,7 +84,7 @@ namespace GithubActors.Actors
             // create a broadcast router who will ask all of them 
             // if they're available for work
             var broadcastGroup = new BroadcastGroup(coordinators.Select(coordinator => coordinator.Path.ToString()));
-            _boardcaster = Context.ActorOf(Props.Empty.WithRouter(broadcastGroup));
+            _broadcaster = Context.ActorOf(Props.Empty.WithRouter(broadcastGroup));
 
             base.PreStart();
         }
@@ -92,7 +92,7 @@ namespace GithubActors.Actors
         protected override void PreRestart(Exception reason, object message)
         {
             //kill off the old coordinator so we can recreate it from scratch
-            _boardcaster.Tell(PoisonPill.Instance);
+            _broadcaster.Tell(PoisonPill.Instance);
             base.PreRestart(reason, message);
         }
     }
