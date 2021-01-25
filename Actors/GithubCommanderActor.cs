@@ -17,7 +17,6 @@ namespace GithubActors.Actors
 
         public IStash Stash { get; set; }
         private int _pendingJobReplies;
-        private const int _coordinatorCount = 3;
 
         private readonly TimeSpan _updatesFrequency = TimeSpan.FromMilliseconds(200);
 
@@ -34,8 +33,11 @@ namespace GithubActors.Actors
         }
         private void BecomeAsking()
         {
-            _canAcceptJobSender = Sender;
-            _pendingJobReplies = 3; //the number of routees
+            _canAcceptJobSender = Sender;    
+            // block, but ask the router for the number of routees. Avoids magic numbers.
+            var pendingJobReplies = _broadcaster
+                .Ask<Routees>(new GetRoutees())
+                .Result.Members.Count();
             Become(Asking);
         }
 
@@ -76,15 +78,9 @@ namespace GithubActors.Actors
 
         protected override void PreStart()
         {
-            // create GithubCoordinatorActor instances
-            var coordinators = new List<IActorRef>();
-            for (var i = 0; i < _coordinatorCount; i++)
-                coordinators.Add(Context.ActorOf(Props.Create(() => new GithubCoordinatorActor(_updatesFrequency)), ActorPaths.GithubCoordinatorActor.Name + i));
-
-            // create a broadcast router who will ask all of them 
-            // if they're available for work
-            var broadcastGroup = new BroadcastGroup(coordinators.Select(coordinator => coordinator.Path.ToString()));
-            _broadcaster = Context.ActorOf(Props.Empty.WithRouter(broadcastGroup));
+            _broadcaster = Context.ActorOf(Props
+                .Create(() => new GithubCoordinatorActor(_updatesFrequency))
+                .WithRouter(FromConfig.Instance), ActorPaths.GithubCoordinatorActor.Name);
 
             base.PreStart();
         }
