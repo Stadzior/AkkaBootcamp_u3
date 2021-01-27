@@ -13,10 +13,11 @@ namespace GithubActors.Actors
     public class GithubCommanderActor : ReceiveActor, IWithUnboundedStash
     {
         private IActorRef _broadcaster;
-        private IActorRef _canAcceptJobSender; 
+        private IActorRef _canAcceptJobSender;
 
         public IStash Stash { get; set; }
         private int _pendingJobReplies;
+        private RepoKey _repoJob;
 
         private readonly TimeSpan _updatesFrequency = TimeSpan.FromMilliseconds(200);
 
@@ -28,6 +29,7 @@ namespace GithubActors.Actors
             Receive<CanAcceptJob>(job =>
             {
                 _broadcaster.Tell(job);
+                _repoJob = job.Repo;
                 BecomeAsking();
             });
         }
@@ -35,10 +37,13 @@ namespace GithubActors.Actors
         {
             _canAcceptJobSender = Sender;    
             // block, but ask the router for the number of routees. Avoids magic numbers.
-            var pendingJobReplies = _broadcaster
+            _pendingJobReplies = _broadcaster
                 .Ask<Routees>(new GetRoutees())
                 .Result.Members.Count();
             Become(Asking);
+
+            // send ourselves a ReceiveTimeout message if no message within 3 seconds
+            Context.SetReceiveTimeout(TimeSpan.FromSeconds(3));
         }
 
         private void Asking()
@@ -69,11 +74,22 @@ namespace GithubActors.Actors
 
                 BecomeReady();
             });
+
+            // add this inside the GithubCommanderActor.Asking method
+            // means at least one actor failed to respond
+            Receive<ReceiveTimeout>(timeout =>
+            {
+                _canAcceptJobSender.Tell(new UnableToAcceptJob(_repoJob));
+                BecomeReady();
+            });
         }
         private void BecomeReady()
         {
             Become(Ready);
             Stash.UnstashAll();
+
+            // cancel ReceiveTimeout
+            Context.SetReceiveTimeout(null);
         }
 
         protected override void PreStart()
